@@ -2,6 +2,17 @@ var sound = { A: null, B: null, C: null };
 let pvSlider;
 let delay1, delay2, delay3;
 let delayTimeSlider1, delayTimeSlider2, delayTimeSlider3;
+let autoButton1, autoButton2, autoButton3;
+let autoMode1 = false, autoMode2 = false, autoMode3 = false;
+
+let noiseOffsetA = 0.0, noiseSpeedA = 0.01;
+let noiseOffsetB = 10.0, noiseSpeedB = 0.005;
+let noiseOffsetC = 2000.0, noiseSpeedC = 0.02;
+
+let speedSlider1, speedSlider2, speedSlider3;
+
+let recorder, soundFile;
+let isRecording = false;
 
 function preload() {
  
@@ -10,9 +21,10 @@ function preload() {
   sound.C = loadSound("RullyShabraSampleT09.wav", "RullyShabaraSampleT05.wav");
 }
 
+
 function setup() {
  
-  createCanvas(600, 600);
+  createCanvas(800, 800);
 
   colorMode(HSB, 690, 200, 100, 100);
 
@@ -43,7 +55,36 @@ function setup() {
   delayTimeSlider3 = createSlider(0, 1, 0, 0.01);
   delayTimeSlider3.position(440, 10);
   
+  delayTimeSlider1.style('width', '200px');
+delayTimeSlider1.style('background', '#ff0000'); // Red for A
+delayTimeSlider2.style('width', '200px');
+delayTimeSlider2.style('background', '#00ff00'); // Green for B
+delayTimeSlider3.style('width', '200px');
+delayTimeSlider3.style('background', '#0000ff'); // Blue for C
+  
+  speedSlider1 = createSlider(0.001, 0.05, 0.01, 0.001);
+speedSlider1.position(20, 75);
+speedSlider1.hide();
+
+speedSlider2 = createSlider(0.001, 0.05, 0.015, 0.001);
+speedSlider2.position(230, 75);
+speedSlider2.hide();
+
+speedSlider3 = createSlider(0.001, 0.05, 0.02, 0.001);
+speedSlider3.position(440, 75);
+speedSlider3.hide();
+  
+  speedSlider1.style('width', '200px');
+speedSlider1.style('background', '#ff0000'); // Red for A
+speedSlider2.style('width', '200px');
+speedSlider2.style('background', '#00ff00'); // Green for B
+speedSlider3.style('width', '200px');
+speedSlider3.style('background', '#0000ff'); // Blue for C
+
  
+
+
+
 delayTimeSlider1.input(() => {
   delay1.delayTime(delayTimeSlider1.value());
 });
@@ -56,7 +97,77 @@ delayTimeSlider3.input(() => {
   delay3.delayTime(delayTimeSlider3.value());
 });
 
+  recorder = new p5.SoundRecorder();
+  soundFile = new p5.SoundFile();
+  
+  // NEW: Button for saving the sample
+  saveButton = createButton('Save Sample');
+  saveButton.position(670, 35);
+  saveButton.mousePressed(toggleRecording);
+  
+  saveButton.style('background-color', '#FF5733'); // A vibrant orange
+saveButton.style('color', '#ffffff'); // White text
+saveButton.style('border', 'none'); // No border for a modern look
+saveButton.style('padding', '10px 10px'); // Some padding for aesthetics
+saveButton.style('font-size', '10px'); // Bigger text
+saveButton.style('border-radius', '8px'); // Rounded corners for a touch of elegance
+saveButton.style('cursor', 'pointer');
+  
+  autoButton1 = createButton('Xhabarabot Mode A');
+autoButton1.position(25, 40);
+autoButton1.mousePressed(() => { 
+  autoMode1 = !autoMode1; 
+  autoMode1 ? speedSlider1.show() : speedSlider1.hide();
+});
+
+// Styling buttons
+styleAutoButton(autoButton1, '#D15050');  // Red for A
+
+autoButton2 = createButton('Xhabarabot Mode B');
+autoButton2.position(235, 40);
+autoButton2.mousePressed(() => { 
+  autoMode2 = !autoMode2; 
+  autoMode2 ? speedSlider2.show() : speedSlider2.hide();
+});
+
+styleAutoButton(autoButton2, '#BDB253');  // Yellow for B
+
+autoButton3 = createButton('Xhabarabot Mode C');
+autoButton3.position(445, 40);
+autoButton3.mousePressed(() => { 
+  autoMode3 = !autoMode3; 
+  autoMode3 ? speedSlider3.show() : speedSlider3.hide();
+});
+
+styleAutoButton(autoButton3, '#29AD2F');  // Green for C
 }
+
+function styleAutoButton(button, bgColor) {
+  button.style('background-color', bgColor);
+  button.style('color', '#0F0F0F');  // White text
+  button.style('border', 'none');  // No border for a modern look
+  button.style('padding', '8px 8px');  // Some padding for aesthetics
+  button.style('font-size', '10px');  // Bigger text
+  button.style('border-radius', '8px');  // Rounded corners for elegance
+  button.style('cursor', 'pointer');  // Change cursor to pointer on hover
+
+
+
+}
+
+function toggleRecording() {
+  if (!isRecording) {
+    recorder.record(soundFile);
+    saveButton.html('Stop Recording');
+    isRecording = true;
+  } else {
+    recorder.stop();
+    saveButton.html('Download');
+    soundFile.save('XhabarabotDronex.wav');  // Save the sound file
+    isRecording = false;
+  }
+}
+
 
 function draw() {
   background(
@@ -170,10 +281,32 @@ function draw() {
     audio.rate(0.5 + pvSlider[key].pos.x * 1.5);
     audio.setVolume(1.0 - pvSlider[key].pos.y);
   }
+  
+ if (autoMode1) {
+  noiseSpeedA = speedSlider1.value();
+  pvSlider.A.pos.x = noise(noiseOffsetA);
+  pvSlider.A.pos.y = noise(noiseOffsetA + 70);
+  noiseOffsetA += noiseSpeedA;
+}
+if (autoMode2) {
+  noiseSpeedB = speedSlider2.value();
+  pvSlider.B.pos.x = noise(noiseOffsetB);
+  pvSlider.B.pos.y = noise(noiseOffsetB + 500);
+  noiseOffsetB += noiseSpeedB;
+}
+if (autoMode3) {
+  noiseSpeedC = speedSlider3.value();
+  pvSlider.C.pos.x = noise(noiseOffsetC);
+  pvSlider.C.pos.y = noise(noiseOffsetC + 10);
+  noiseOffsetC += noiseSpeedC;
+}
+
+
 }
 
 function mousePressed() {
 
+  // Your existing code for playing audio
   for (const [key, audio] of Object.entries(sound)) {
     if (!audio.isPlaying()) {
       audio.setLoop(true);
@@ -181,16 +314,19 @@ function mousePressed() {
     }
   }
 
-  for (const [key, slider] of Object.entries(pvSlider)) {
-    if (slider.hover) slider.control = true;
-  }
+  // Updated logic for taking control of sliders
+  if (!autoMode1 && pvSlider.A.hover) pvSlider.A.control = true;
+  if (!autoMode2 && pvSlider.B.hover) pvSlider.B.control = true;
+  if (!autoMode3 && pvSlider.C.hover) pvSlider.C.control = true;
 }
 
+
 function mouseReleased() {
-  for (const [key, slider] of Object.entries(pvSlider)) {
-    if (slider.control) slider.control = false;
-  }
+  if (!autoMode1) pvSlider.A.control = false;
+  if (!autoMode2) pvSlider.B.control = false;
+  if (!autoMode3) pvSlider.C.control = false;
 }
+
 
 function keyPressed() {
   if (key == " ") {
@@ -203,3 +339,6 @@ function keyPressed() {
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
 }
+
+// Created by Rully Shabara
+// pvSliders and Wave Vectors designed by Louis Marcellino
