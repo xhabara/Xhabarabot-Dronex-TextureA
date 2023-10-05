@@ -24,7 +24,7 @@ function preload() {
 
 function setup() {
  
-  createCanvas(800, 800);
+  createCanvas(770, 500);
 
   colorMode(HSB, 690, 200, 100, 100);
 
@@ -337,7 +337,7 @@ function keyPressed() {
 }
 
 function windowResized() {
-  resizeCanvas(windowWidth, windowHeight);
+  resizeCanvas(770,500);
 }
 
 // Created by Rully Shabara
